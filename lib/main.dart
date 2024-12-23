@@ -4,17 +4,14 @@ import 'package:flutter/material.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:ffmpeg_helper/ffmpeg_helper.dart';
-//import 'package:ffmpeg_cli/ffmpeg_cli.dart';
-//import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
-//import 'package:ffmpeg_kit_flutter/return_code.dart';
 
 import 'package:record/record.dart';
 import 'package:vosk_flutter/vosk_flutter.dart';
 
-const _sampleRate = 16000;
+const _sampleRate = 16000; // 認識周波数
 
 void main() async {
-  await FFMpegHelper.instance.initialize(); // This is a singleton instance
+  await FFMpegHelper.instance.initialize(); // for ffmpeg
   runApp(const MyApp());  runApp(const MyApp());
 }
 
@@ -24,6 +21,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
+      /*theme: ThemeData(
+        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: Colors.grey[200],
+      ),*/
       home: KotoriMemo(),
     );
   }
@@ -37,9 +38,11 @@ class KotoriMemo extends StatefulWidget {
 }
 
 class _KotoriMemoState extends State<KotoriMemo> {
-  static const _textStyle = TextStyle(fontSize: 20, color: Colors.black);
-  static const _modelName = 'vosk-model-small-en-us-0.15';
-  //static const _sampleRate = 16000;
+  static const _textStyle = TextStyle(fontSize: 18, color: Colors.black);
+
+  //static const _modelName = 'vosk-model-small-en-us-0.15';
+  String? _modelName = 'vosk-model-small-en-us-0.15';
+  List? _availableModels; // 利用可能なモデルリスト
 
   final _vosk = VoskFlutterPlugin.instance();
   final _modelLoader = ModelLoader();
@@ -53,14 +56,14 @@ class _KotoriMemoState extends State<KotoriMemo> {
 
   bool _recognitionStarted = false;
 
-  @override
-  void initState() {
-    super.initState();
-
-    _modelLoader
+  Future<Recognizer?> _initializeModel(String? name) async {
+    try {
+      _modelName = name;
+      _modelLoader
         .loadModelsList()
         .then((modelsList) {
           print("Loaded models: ${modelsList.map((model) => model.name).toList()}");
+          _availableModels = modelsList;
           return modelsList.firstWhere(
             (model) => model.name == _modelName,
             orElse: () => throw Exception('Model $_modelName not found'),
@@ -73,9 +76,24 @@ class _KotoriMemoState extends State<KotoriMemo> {
         .then((model) => setState(() => _model = model))
         .then((_) => _vosk.createRecognizer(
             model: _model!, sampleRate: _sampleRate)) // create recognizer
-        .then((value) => _recognizer = value)
-        .then((recognizer) {
+        .then((value) => _recognizer = value);
+        print("Selected models: $_modelName");
+        return _recognizer;
+    } catch (e) {
+      print('Error during model initialization: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _initializeModel(_modelName).then((recognizer) {
       if (Platform.isAndroid) {
+        /*final speechService = await _vosk.initSpeechService(recognizer);
+        speechService.onPartial().forEach((partial) => print(partial));
+        speechService.onResult().forEach((result) => print(result));
+        await speechService.start();*/
         _vosk
             .initSpeechService(_recognizer!) // init speech service
             .then((speechService) =>
@@ -142,25 +160,129 @@ class _KotoriMemoState extends State<KotoriMemo> {
     );
   }
 
+  // ボタン
+  Widget _buildButton(
+      {required IconData icon, required String label, required VoidCallback onPressed}) {
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 20),
+      label: Text(label, style: const TextStyle(fontSize: 16)),
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+        /*primary: Colors.blueAccent,
+        onPrimary: Colors.white,*/
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+      ),
+    );
+  }
+
+  // メイン画面
   Widget _commonExample() {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Kotori Memo"),
+        centerTitle: true,
+        backgroundColor: Colors.blueAccent,
+      ),
       body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 20),
+                Text(
+                  "Welcome to Kotori Memo",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue[800],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  "Select a model, record audio, or upload a file to begin.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, color: Colors.black54),
+                ),
+                DropdownButton<String>(
+                  value: _modelName,
+                  items: _availableModels!.map((model) {
+                    return DropdownMenuItem<String>(
+                      value: model.name,
+                      child: Text(model.name),
+                    );
+                  }).toList(),
+                  onChanged: (String? newModel) => _initializeModel(newModel),
+                ),
+                const SizedBox(height: 20),
+                _buildButton(
+                  icon: Icons.upload_file,
+                  label: "Upload and Recognize Audio",
+                  onPressed: _pickAndRecognizeFile,
+                ),
+                const SizedBox(height: 15),
+                _buildButton(
+                  icon: _recognitionStarted ? Icons.stop : Icons.mic,
+                  label: _recognitionStarted ? "Stop Recording" : "Record Audio",
+                  onPressed: () {
+                    setState(() {
+                      _recognitionStarted = !_recognitionStarted;
+                    });
+                  },
+                ),
+                const SizedBox(height: 20),
+                if (_fileRecognitionResult != null)
+                  Card(
+                    margin: const EdgeInsets.symmetric(vertical: 15),
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        "Recognition Result:\n$_fileRecognitionResult",
+                        style: _textStyle,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      /*body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-              ElevatedButton(
-                onPressed: _pickAndRecognizeFile,
-                child: const Text("Upload and Recognize Audio"),
-              ),
-              if (_fileRecognitionResult != null)
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    "Recognition Result:\n$_fileRecognitionResult",
-                    style: _textStyle,
-                    textAlign: TextAlign.center,
-                  ),
+            DropdownButton<String>(
+              value: _modelName,
+              items: _availableModels!.map((model) {
+                return DropdownMenuItem<String>(
+                  value: model.name,
+                  child: Text(model.name),
+                );
+              }).toList(),
+              onChanged: (String? newModel) => _initializeModel(newModel),
+            ),
+            ElevatedButton(
+              onPressed: _pickAndRecognizeFile,
+              child: const Text("Upload and Recognize Audio"),
+            ),
+            if (_fileRecognitionResult != null)
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  "Recognition Result:\n$_fileRecognitionResult",
+                  style: _textStyle,
+                  textAlign: TextAlign.center,
                 ),
+              ),
             ElevatedButton(
                 onPressed: () async {
                   if (_recognitionStarted) {
@@ -176,7 +298,7 @@ class _KotoriMemoState extends State<KotoriMemo> {
                 style: _textStyle),
           ],
         ),
-      ),
+      ),*/
     );
   }
 
