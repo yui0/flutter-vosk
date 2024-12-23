@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data'; // for Uint8List
 import 'package:flutter/material.dart';
 
 import 'package:file_picker/file_picker.dart';
@@ -205,6 +206,7 @@ class _KotoriMemoState extends State<KotoriMemo> {
     }*/
   }
 
+  // ffmpegでPCM形式に
   Future<String> convertToPCM(String inputPath, String outputPath) async {
     FFMpegHelper ffmpeg = FFMpegHelper.instance;
     final FFMpegCommand cliCommand = FFMpegCommand(
@@ -230,18 +232,32 @@ class _KotoriMemoState extends State<KotoriMemo> {
       },
     );
 
-    /*FFMpegHelperSession session = await ffmpeg.runAsync(
-      cliCommand,
-      statisticsCallback: (Statistics statistics) {
-        print('bitrate: ${statistics.getBitrate()}');
-      },
-    );*/
-
-    /*if (session.returnCode != 0) {
-      throw Exception("Failed to convert audio format. Return code: ${session.returnCode}");
-    }*/
-
     return outputPath;
+  }
+
+  // voskを使って認識
+  Future<String> processAudioBytes(
+      Uint8List audioBytes, dynamic recognizer, int chunkSize) async {
+    int pos = 0;
+
+    while (pos + chunkSize < audioBytes.length) {
+      final resultReady = await recognizer.acceptWaveformBytes(
+        Uint8List.fromList(audioBytes.sublist(pos, pos + chunkSize)),
+      );
+      pos += chunkSize;
+
+      if (resultReady) {
+        print(await recognizer.getResult());
+      } else {
+        print(await recognizer.getPartialResult());
+      }
+    }
+
+    // Process the remaining audio
+    await recognizer.acceptWaveformBytes(
+      Uint8List.fromList(audioBytes.sublist(pos)),
+    );
+    return (await recognizer.getFinalResult());
   }
 
   Future<void> _pickAndRecognizeFile() async {
@@ -254,24 +270,22 @@ class _KotoriMemoState extends State<KotoriMemo> {
         String outputPath = "${inputPath}_converted.wav";
         outputPath = await convertToPCM(inputPath, outputPath);
 
-        //if (session) {
-          // PCMデータを読み込む
-          final bytes = File(outputPath).readAsBytesSync();
+        // PCMデータを読み込む
+        final bytes = File(outputPath).readAsBytesSync();
 
-          // 音声認識ライブラリに渡す
-          _recognizer!.acceptWaveformBytes(bytes);
-          final recognitionResult = await _recognizer!.getFinalResult();
+        // 音声認識ライブラリに渡す
+        /*_recognizer!.acceptWaveformBytes(bytes);
+        final recognitionResult = await _recognizer!.getFinalResult();*/
+        int chunkSize = 8192;
+        final recognitionResult = await processAudioBytes(bytes, _recognizer!, chunkSize);
 
-          // 結果をUIに表示
-          setState(() {
-            _fileRecognitionResult = recognitionResult;
-          });
+        // 結果をUIに表示
+        setState(() {
+          _fileRecognitionResult = recognitionResult;
+        });
 
-          // 一時ファイルを削除
-          File(outputPath).deleteSync();
-        /*} else {
-          //throw Exception("Failed to convert audio format. Return code: $returnCode");
-        }*/
+        // 一時ファイルを削除
+        File(outputPath).deleteSync();
       } else {
         setState(() {
           _fileRecognitionResult = "No file selected.";
