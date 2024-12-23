@@ -10,6 +10,8 @@ import 'package:ffmpeg_helper/ffmpeg_helper.dart';
 import 'package:record/record.dart';
 import 'package:vosk_flutter/vosk_flutter.dart';
 
+const _sampleRate = 16000;
+
 void main() async {
   await FFMpegHelper.instance.initialize(); // This is a singleton instance
   runApp(const MyApp());  runApp(const MyApp());
@@ -36,7 +38,7 @@ class KotoriMemo extends StatefulWidget {
 class _KotoriMemoState extends State<KotoriMemo> {
   static const _textStyle = TextStyle(fontSize: 20, color: Colors.black);
   static const _modelName = 'vosk-model-small-en-us-0.15';
-  static const _sampleRate = 16000;
+  //static const _sampleRate = 16000;
 
   final _vosk = VoskFlutterPlugin.instance();
   final _modelLoader = ModelLoader();
@@ -203,53 +205,55 @@ class _KotoriMemoState extends State<KotoriMemo> {
     }*/
   }
 
+  Future<String> convertToPCM(String inputPath, String outputPath) async {
+    FFMpegHelper ffmpeg = FFMpegHelper.instance;
+    final FFMpegCommand cliCommand = FFMpegCommand(
+      inputs: [
+        FFMpegInput.asset(inputPath),
+      ],
+      args: [
+        const LogLevelArgument(LogLevel.info),
+        const OverwriteArgument(),
+        const CustomArgument([
+          "-ar", "$_sampleRate",
+          "-ac", "1",
+          "-f", "wav",
+        ]),
+      ],
+      outputFilepath: outputPath,
+    );
+
+    await ffmpeg.runSync(
+      cliCommand,
+      statisticsCallback: (Statistics statistics) {
+        print('bitrate: ${statistics.getBitrate()}');
+      },
+    );
+
+    /*FFMpegHelperSession session = await ffmpeg.runAsync(
+      cliCommand,
+      statisticsCallback: (Statistics statistics) {
+        print('bitrate: ${statistics.getBitrate()}');
+      },
+    );*/
+
+    /*if (session.returnCode != 0) {
+      throw Exception("Failed to convert audio format. Return code: ${session.returnCode}");
+    }*/
+
+    return outputPath;
+  }
+
   Future<void> _pickAndRecognizeFile() async {
     try {
       // ファイルを選択
       FilePickerResult? result = await FilePicker.platform.pickFiles();
       if (result != null && result.files.single.path != null) {
+        // PCM形式に変換
         String inputPath = result.files.single.path!;
         String outputPath = "${inputPath}_converted.wav";
+        outputPath = await convertToPCM(inputPath, outputPath);
 
-        // FFmpegでPCM形式に変換
-        /*final session = await FFmpegKit.execute(
-            '-i "$inputPath" -ar 16000 -ac 1 -f wav "$outputPath"');
-        final returnCode = await session.getReturnCode();*/
-
-FFMpegHelper ffmpeg = FFMpegHelper.instance;
-final FFMpegCommand cliCommand = FFMpegCommand(
-  inputs: [
-    FFMpegInput.asset(inputPath),
-  ],
-  args: [
-    const LogLevelArgument(LogLevel.info),
-    const OverwriteArgument(),
-    const AudioBitrateArgument(16000),
-    const CustomArgument([
-      "-ac", "1",
-      "-f", "wav",
-    ])
-  ],
-  /*filterGraph: FilterGraph(
-    chains: [
-      FilterChain(
-        inputs: [],
-        filters: [
-        ],
-        outputs: [],
-      ),
-    ],
-  ),*/
-  outputFilepath: outputPath
-);
-FFMpegHelperSession session = await ffmpeg.runAsync(
-  cliCommand,
-  statisticsCallback: (Statistics statistics) {
-    print('bitrate: ${statistics.getBitrate()}');
-  },
-);
-
-        //if (ReturnCode.isSuccess(returnCode)) {
         //if (session) {
           // PCMデータを読み込む
           final bytes = File(outputPath).readAsBytesSync();
@@ -265,14 +269,14 @@ FFMpegHelperSession session = await ffmpeg.runAsync(
 
           // 一時ファイルを削除
           File(outputPath).deleteSync();
-        } else {
+        /*} else {
           //throw Exception("Failed to convert audio format. Return code: $returnCode");
-        }
-      /*} else {
+        }*/
+      } else {
         setState(() {
           _fileRecognitionResult = "No file selected.";
         });
-      }*/
+      }
     } catch (e) {
       setState(() {
         _error = "Error processing file: $e";
