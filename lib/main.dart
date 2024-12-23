@@ -56,13 +56,14 @@ class _KotoriMemoState extends State<KotoriMemo> {
 
   bool _recognitionStarted = false;
 
+  // 音声認識モデル
   Future<Recognizer?> _initializeModel(String? name) async {
     try {
       _modelName = name;
       _modelLoader
         .loadModelsList()
         .then((modelsList) {
-          print("Loaded models: ${modelsList.map((model) => model.name).toList()}");
+          print("Available models: ${modelsList.map((model) => model.name).toList()}");
           _availableModels = modelsList;
           return modelsList.firstWhere(
             (model) => model.name == _modelName,
@@ -70,17 +71,19 @@ class _KotoriMemoState extends State<KotoriMemo> {
           );
         })
         .then((modelDescription) =>
-            _modelLoader.loadFromNetwork(modelDescription.url)) // load model
+          _modelLoader.loadFromNetwork(modelDescription.url)) // load model
         .then(
-            (modelPath) => _vosk.createModel(modelPath)) // create model object
+          (modelPath) => _vosk.createModel(modelPath)) // create model object
         .then((model) => setState(() => _model = model))
         .then((_) => _vosk.createRecognizer(
-            model: _model!, sampleRate: _sampleRate)) // create recognizer
+          model: _model!, sampleRate: _sampleRate)) // create recognizer
         .then((value) => _recognizer = value);
-        print("Selected models: $_modelName");
-        return _recognizer;
+
+      print("Selected model: $name");
+      return _recognizer;
     } catch (e) {
       print('Error during model initialization: $e');
+      return null;
     }
   }
 
@@ -182,7 +185,14 @@ class _KotoriMemoState extends State<KotoriMemo> {
   Widget _commonExample() {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Kotori Memo"),
+        title: const Text(
+          "Kotori Memo",
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
       ),
@@ -194,20 +204,21 @@ class _KotoriMemoState extends State<KotoriMemo> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 20),
-                Text(
+                /*Text(
                   "Welcome to Kotori Memo",
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.blue[800],
                   ),
-                ),
+                ),*/
                 const SizedBox(height: 10),
                 const Text(
                   "Select a model, record audio, or upload a file to begin.",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16, color: Colors.black54),
                 ),
+                const SizedBox(height: 10),
                 DropdownButton<String>(
                   value: _modelName,
                   items: _availableModels!.map((model) {
@@ -216,7 +227,12 @@ class _KotoriMemoState extends State<KotoriMemo> {
                       child: Text(model.name),
                     );
                   }).toList(),
-                  onChanged: (String? newModel) => _initializeModel(newModel),
+                  onChanged: (String? newModel) async {
+                    if (newModel != null && newModel != _modelName) {
+                      setState(() => _modelName = newModel);
+                      await _initializeModel(newModel);
+                    }
+                  },
                 ),
                 const SizedBox(height: 20),
                 _buildButton(
