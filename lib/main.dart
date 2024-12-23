@@ -1,12 +1,18 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
+
+import 'package:file_picker/file_picker.dart';
+import 'package:ffmpeg_helper/ffmpeg_helper.dart';
+//import 'package:ffmpeg_cli/ffmpeg_cli.dart';
+//import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+//import 'package:ffmpeg_kit_flutter/return_code.dart';
+
 import 'package:record/record.dart';
 import 'package:vosk_flutter/vosk_flutter.dart';
-import 'test_screen.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  await FFMpegHelper.instance.initialize(); // This is a singleton instance
+  runApp(const MyApp());  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -28,7 +34,7 @@ class KotoriMemo extends StatefulWidget {
 }
 
 class _KotoriMemoState extends State<KotoriMemo> {
-  static const _textStyle = TextStyle(fontSize: 30, color: Colors.black);
+  static const _textStyle = TextStyle(fontSize: 20, color: Colors.black);
   static const _modelName = 'vosk-model-small-en-us-0.15';
   static const _sampleRate = 16000;
 
@@ -73,9 +79,10 @@ class _KotoriMemoState extends State<KotoriMemo> {
                 setState(() => _speechService = speechService))
             .catchError((e) => setState(() => _error = e.toString()));
       }
-    }).catchError((e) {
+    }).catchError((e, stacktrace) {
       setState(() => _error = e.toString());
-      return null;
+      print('Exception: '+e.toString());
+      print('Stacktrace: '+stacktrace.toString());
     });
   }
 
@@ -138,6 +145,19 @@ class _KotoriMemoState extends State<KotoriMemo> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+              ElevatedButton(
+                onPressed: _pickAndRecognizeFile,
+                child: const Text("Upload and Recognize Audio"),
+              ),
+              if (_fileRecognitionResult != null)
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    "Recognition Result:\n$_fileRecognitionResult",
+                    style: _textStyle,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
             ElevatedButton(
                 onPressed: () async {
                   if (_recognitionStarted) {
@@ -181,5 +201,82 @@ class _KotoriMemoState extends State<KotoriMemo> {
           '\n\n Make sure fmedia(https://stsaz.github.io/fmedia/)'
               ' is installed on Linux';
     }*/
+  }
+
+  Future<void> _pickAndRecognizeFile() async {
+    try {
+      // ファイルを選択
+      FilePickerResult? result = await FilePicker.platform.pickFiles();
+      if (result != null && result.files.single.path != null) {
+        String inputPath = result.files.single.path!;
+        String outputPath = "${inputPath}_converted.wav";
+
+        // FFmpegでPCM形式に変換
+        /*final session = await FFmpegKit.execute(
+            '-i "$inputPath" -ar 16000 -ac 1 -f wav "$outputPath"');
+        final returnCode = await session.getReturnCode();*/
+
+FFMpegHelper ffmpeg = FFMpegHelper.instance;
+final FFMpegCommand cliCommand = FFMpegCommand(
+  inputs: [
+    FFMpegInput.asset(inputPath),
+  ],
+  args: [
+    const LogLevelArgument(LogLevel.info),
+    const OverwriteArgument(),
+    const AudioBitrateArgument(16000),
+    const CustomArgument([
+      "-ac", "1",
+      "-f", "wav",
+    ])
+  ],
+  /*filterGraph: FilterGraph(
+    chains: [
+      FilterChain(
+        inputs: [],
+        filters: [
+        ],
+        outputs: [],
+      ),
+    ],
+  ),*/
+  outputFilepath: outputPath
+);
+FFMpegHelperSession session = await ffmpeg.runAsync(
+  cliCommand,
+  statisticsCallback: (Statistics statistics) {
+    print('bitrate: ${statistics.getBitrate()}');
+  },
+);
+
+        //if (ReturnCode.isSuccess(returnCode)) {
+        //if (session) {
+          // PCMデータを読み込む
+          final bytes = File(outputPath).readAsBytesSync();
+
+          // 音声認識ライブラリに渡す
+          _recognizer!.acceptWaveformBytes(bytes);
+          final recognitionResult = await _recognizer!.getFinalResult();
+
+          // 結果をUIに表示
+          setState(() {
+            _fileRecognitionResult = recognitionResult;
+          });
+
+          // 一時ファイルを削除
+          File(outputPath).deleteSync();
+        } else {
+          //throw Exception("Failed to convert audio format. Return code: $returnCode");
+        }
+      /*} else {
+        setState(() {
+          _fileRecognitionResult = "No file selected.";
+        });
+      }*/
+    } catch (e) {
+      setState(() {
+        _error = "Error processing file: $e";
+      });
+    }
   }
 }
