@@ -56,15 +56,14 @@ class _AiMemoState extends State<AiMemo> {
   bool _recognitionStarted = false;
 
   // 音声認識モデル
-  /*Future<Recognizer?> _initializeModel(String? name) async {
+  Future<Recognizer?> _initializeModel(String? name) async {
     try {
       _modelName = name;
       print("Selected model: $name");
 
       // Load the list of models
       final modelsList = await _modelLoader.loadModelsList();
-      print("Available models: ${modelsList.map((model) => model.name).toList()}");
-      _availableModels = modelsList;
+      //print("Available models: ${modelsList.map((model) => model.name).toList()}");
 
       // Find the specified model
       final modelDescription = modelsList.firstWhere(
@@ -73,16 +72,27 @@ class _AiMemoState extends State<AiMemo> {
       );
 
       // Load the model from the network
-      final modelPath = await _modelLoader.loadFromNetwork(modelDescription.url);
+      print(modelDescription.url);
+      //final modelPath = await _modelLoader.loadFromNetwork(modelDescription.url);
+      final modelPath = await _modelLoader.loadFromAssets("assets/models/vosk-model-small-ja-0.22.zip");
 
       // Create the model object
-      _model = await _vosk.createModel(modelPath);
+      print(modelPath);
+      final model = await _vosk.createModel(modelPath);
+      //final spkModel = await _vosk.createSpeakerModel(await _modelLoader.loadFromAssets("assets/models/vosk-model-spk-0.4.zip"));
 
       // Create the recognizer
       _recognizer = await _vosk.createRecognizer(
-        model: _model!,
+        model: model!,
         sampleRate: _sampleRate,
       );
+      //await _vosk.setSpeakerModel(_recognizer, spkModel);
+
+      setState(() {
+        //_modelName = name;
+        _availableModels = modelsList;
+        _model = model;
+      });
 
       return _recognizer;
     } catch (e, stackTrace) {
@@ -90,8 +100,8 @@ class _AiMemoState extends State<AiMemo> {
       print(stackTrace);
       return null;
     }
-  }*/
-  Future<Recognizer?> _initializeModel(String? name) async {
+  }
+  /*Future<Recognizer?> _initializeModel(String? name) async {
     try {
       _modelName = name;
       _modelLoader
@@ -119,7 +129,7 @@ class _AiMemoState extends State<AiMemo> {
       print('Error during model initialization: $e');
       return null;
     }
-  }
+  }*/
 
   @override
   void initState() {
