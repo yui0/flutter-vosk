@@ -25,22 +25,21 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Colors.grey[200],
       ),*/
-      home: KotoriMemo(),
+      home: AiMemo(),
     );
   }
 }
 
-class KotoriMemo extends StatefulWidget {
-  const KotoriMemo({Key? key}) : super(key: key);
+class AiMemo extends StatefulWidget {
+  const AiMemo({Key? key}) : super(key: key);
 
   @override
-  State<KotoriMemo> createState() => _KotoriMemoState();
+  State<AiMemo> createState() => _AiMemoState();
 }
 
-class _KotoriMemoState extends State<KotoriMemo> {
+class _AiMemoState extends State<AiMemo> {
   static const _textStyle = TextStyle(fontSize: 18, color: Colors.black);
 
-  //static const _modelName = 'vosk-model-small-en-us-0.15';
   String? _modelName = 'vosk-model-small-en-us-0.15';
   List? _availableModels; // 利用可能なモデルリスト
 
@@ -57,6 +56,41 @@ class _KotoriMemoState extends State<KotoriMemo> {
   bool _recognitionStarted = false;
 
   // 音声認識モデル
+  /*Future<Recognizer?> _initializeModel(String? name) async {
+    try {
+      _modelName = name;
+      print("Selected model: $name");
+
+      // Load the list of models
+      final modelsList = await _modelLoader.loadModelsList();
+      print("Available models: ${modelsList.map((model) => model.name).toList()}");
+      _availableModels = modelsList;
+
+      // Find the specified model
+      final modelDescription = modelsList.firstWhere(
+        (model) => model.name == _modelName,
+        orElse: () => throw Exception('Model $_modelName not found'),
+      );
+
+      // Load the model from the network
+      final modelPath = await _modelLoader.loadFromNetwork(modelDescription.url);
+
+      // Create the model object
+      _model = await _vosk.createModel(modelPath);
+
+      // Create the recognizer
+      _recognizer = await _vosk.createRecognizer(
+        model: _model!,
+        sampleRate: _sampleRate,
+      );
+
+      return _recognizer;
+    } catch (e, stackTrace) {
+      print('Error during model initialization: $e');
+      print(stackTrace);
+      return null;
+    }
+  }*/
   Future<Recognizer?> _initializeModel(String? name) async {
     try {
       _modelName = name;
@@ -186,7 +220,7 @@ class _KotoriMemoState extends State<KotoriMemo> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Kotori Memo",
+          "あいメモ",
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -204,14 +238,6 @@ class _KotoriMemoState extends State<KotoriMemo> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 20),
-                /*Text(
-                  "Welcome to Kotori Memo",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue[800],
-                  ),
-                ),*/
                 const SizedBox(height: 10),
                 const Text(
                   "Select a model, record audio, or upload a file to begin.",

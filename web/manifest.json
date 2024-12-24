@@ -1,6 +1,6 @@
 {
-    "name": "kotori_memo",
-    "short_name": "kotori_memo",
+    "name": "ai_memo",
+    "short_name": "ai_memo",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
