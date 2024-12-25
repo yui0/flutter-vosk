@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async'; // StreamController
 import 'dart:typed_data'; // for Uint8List
 import 'package:flutter/material.dart';
 
@@ -47,7 +48,11 @@ class _AiMemoState extends State<AiMemo> {
   final _modelLoader = ModelLoader();
   //final _recorder = Record();
 
-  String? _fileRecognitionResult;
+  final _partialStreamController = StreamController<String>.broadcast();
+  Stream<String> get partialStream => _partialStreamController.stream;
+
+  String? _Partial;
+  String? _RecognitionResult;
   String? _error;
   Model? _model;
   Recognizer? _recognizer;
@@ -101,35 +106,6 @@ class _AiMemoState extends State<AiMemo> {
       return null;
     }
   }
-  /*Future<Recognizer?> _initializeModel(String? name) async {
-    try {
-      _modelName = name;
-      _modelLoader
-        .loadModelsList()
-        .then((modelsList) {
-          print("Available models: ${modelsList.map((model) => model.name).toList()}");
-          _availableModels = modelsList;
-          return modelsList.firstWhere(
-            (model) => model.name == _modelName,
-            orElse: () => throw Exception('Model $_modelName not found'),
-          );
-        })
-        .then((modelDescription) =>
-          _modelLoader.loadFromNetwork(modelDescription.url)) // load model
-        .then(
-          (modelPath) => _vosk.createModel(modelPath)) // create model object
-        .then((model) => setState(() => _model = model))
-        .then((_) => _vosk.createRecognizer(
-          model: _model!, sampleRate: _sampleRate)) // create recognizer
-        .then((value) => _recognizer = value);
-
-      print("Selected model: $name");
-      return _recognizer;
-    } catch (e) {
-      print('Error during model initialization: $e');
-      return null;
-    }
-  }*/
 
   @override
   void initState() {
@@ -153,6 +129,11 @@ class _AiMemoState extends State<AiMemo> {
       print('Stacktrace: '+stacktrace.toString());
     });
   }
+  @override
+  void dispose() {
+    _partialStreamController.close(); // StreamControllerをクリーンアップ
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -169,11 +150,11 @@ class _AiMemoState extends State<AiMemo> {
         ),
       );
     } else {
-      return Platform.isAndroid ? _androidExample() : _commonExample();
+      return /*Platform.isAndroid ? _androidExample() :*/ _commonExample();
     }
   }
 
-  Widget _androidExample() {
+  /*Widget _androidExample() {
     return Scaffold(
       body: Center(
         child: Column(
@@ -205,7 +186,7 @@ class _AiMemoState extends State<AiMemo> {
         ),
       ),
     );
-  }
+  }*/
 
   // ボタン
   Widget _buildButton(
@@ -286,8 +267,33 @@ class _AiMemoState extends State<AiMemo> {
                     });
                   },
                 ),
+
+                StreamBuilder<String>(
+                  stream: partialStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 15),
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Text(
+                            "Partial Recognition:\n${snapshot.data}",
+                            style: const TextStyle(fontSize: 18, color: Colors.black),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+
                 const SizedBox(height: 20),
-                if (_fileRecognitionResult != null)
+                if (_RecognitionResult != null)
                   Card(
                     margin: const EdgeInsets.symmetric(vertical: 15),
                     elevation: 4,
@@ -297,60 +303,18 @@ class _AiMemoState extends State<AiMemo> {
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Text(
-                        "Recognition Result:\n$_fileRecognitionResult",
+                        "Recognition Result:\n$_RecognitionResult",
                         style: _textStyle,
                         textAlign: TextAlign.center,
                       ),
                     ),
                   ),
+
               ],
             ),
           ),
         ),
       ),
-      /*body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            DropdownButton<String>(
-              value: _modelName,
-              items: _availableModels!.map((model) {
-                return DropdownMenuItem<String>(
-                  value: model.name,
-                  child: Text(model.name),
-                );
-              }).toList(),
-              onChanged: (String? newModel) => _initializeModel(newModel),
-            ),
-            ElevatedButton(
-              onPressed: _pickAndRecognizeFile,
-              child: const Text("Upload and Recognize Audio"),
-            ),
-            if (_fileRecognitionResult != null)
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  "Recognition Result:\n$_fileRecognitionResult",
-                  style: _textStyle,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ElevatedButton(
-                onPressed: () async {
-                  if (_recognitionStarted) {
-                    await _stopRecording();
-                  } else {
-                    await _recordAudio();
-                  }
-                  setState(() => _recognitionStarted = !_recognitionStarted);
-                },
-                child: Text(
-                    _recognitionStarted ? "Stop recording" : "Record audio")),
-            Text("Final recognition result: $_fileRecognitionResult",
-                style: _textStyle),
-          ],
-        ),
-      ),*/
     );
   }
 
@@ -371,7 +335,7 @@ class _AiMemoState extends State<AiMemo> {
       if (filePath != null) {
         final bytes = File(filePath).readAsBytesSync();
         _recognizer!.acceptWaveformBytes(bytes);
-        _fileRecognitionResult = await _recognizer!.getFinalResult();
+        _RecognitionResult = await _recognizer!.getFinalResult();
       }
     } catch (e) {
       _error = e.toString() +
@@ -423,7 +387,12 @@ class _AiMemoState extends State<AiMemo> {
       if (resultReady) {
         print(await recognizer.getResult());
       } else {
-        print(await recognizer.getPartialResult());
+        final s = await recognizer.getPartialResult();
+        print(s);
+        _partialStreamController.add(s);
+        /*setState(() {
+          _Partial = s;
+        });*/
       }
     }
 
@@ -455,14 +424,14 @@ class _AiMemoState extends State<AiMemo> {
 
         // 結果をUIに表示
         setState(() {
-          _fileRecognitionResult = recognitionResult;
+          _RecognitionResult = recognitionResult;
         });
 
         // 一時ファイルを削除
         File(outputPath).deleteSync();
       } else {
         setState(() {
-          _fileRecognitionResult = "No file selected.";
+          _RecognitionResult = "No file selected.";
         });
       }
     } catch (e) {

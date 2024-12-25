@@ -4,18 +4,23 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.7.0-267.0.dev
+  sdk: ^3.6.0
 
 dependencies:
   flutter:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
-  vosk_flutter: ^0.3.48
+  #vosk_flutter: ^0.3.48
   record: ^5.2.0
   path_provider: ^2.1.5
   file_picker: ^8.1.6
   ffmpeg_helper: ^1.0.1
+
+  vosk_flutter:
+    path: thirdparty/vosk-flutter
+  fllama:
+    path: thirdparty/fllama
 
 dev_dependencies:
   flutter_test:
