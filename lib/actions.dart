@@ -93,9 +93,56 @@ Future<String> convertToPCM(String inputPath, String outputPath) async {
   return outputPath;
 }
 
+late final Isolate _isolate;
+late final SendPort _sendPort;
+
+void _isolateEntry(SendPort sendPort) {
+  final receivePort = ReceivePort();
+  sendPort.send(receivePort.sendPort);
+  receivePort.listen((message) {
+    final function = message[0];
+    final arg = message[1];
+    final replyPort = message[2];
+    final result = function(arg);
+    replyPort.send(result);
+  });
+}
+
+Future<void> initializeIsolate() async {
+  final receivePort = ReceivePort();
+  _isolate = await Isolate.spawn(_isolateEntry, receivePort.sendPort);
+  _sendPort = await receivePort.first;
+}
+
+Future<dynamic> customCompute(Function function, dynamic arg) async {
+  final responsePort = ReceivePort();
+  _sendPort.send([function, arg, responsePort.sendPort]);
+  return await responsePort.first;
+}
+
+/*class IsolateManager {
+  static final IsolateManager _instance = IsolateManager._internal();
+  Isolate? _isolate;
+  final ReceivePort _receivePort = ReceivePort();
+
+  IsolateManager._internal();
+
+  factory IsolateManager() {
+    return _instance;
+  }
+
+  Future<void> init() async {
+    if (_isolate == null) {
+      _isolate = await Isolate.spawn(_isolateEntry, _receivePort.sendPort);
+    }
+  }
+
+  static void _isolateEntry(SendPort sendPort) {
+    // Isolateの処理をここに記述
+  }
+}*/
+
 // voskを使って認識
-/*Stream<String> processAudioBytes(
-    Uint8List audioBytes, dynamic recognizer, int chunkSize) async* {*/
 Future<String> processAudioBytes(
     Uint8List audioBytes, dynamic recognizer, int chunkSize) async {
 //Future<String> processAudioBytes(Uint8List audioBytes) async {
@@ -115,6 +162,9 @@ Future<String> processAudioBytes(
       final resultReady = await recognizer.acceptWaveformBytes(
         Uint8List.fromList(audioBytes.sublist(pos, pos + chunkSize)),
       );
+      /*final resultReady = await compute(recognizer.acceptWaveformBytes,
+        Uint8List.fromList(audioBytes.sublist(pos, pos + chunkSize))
+      );*/
       pos += chunkSize;
 
       if (resultReady) {
@@ -122,7 +172,6 @@ Future<String> processAudioBytes(
         Map<String, dynamic> map = jsonDecode(jsonString);
         str += map['text'];
         print(str);
-        //yield str;
       } else {
         final s = await recognizer.getPartialResult();
         print(s);
@@ -133,6 +182,7 @@ Future<String> processAudioBytes(
       print("Error processing audio chunk: $e");
       break; // Exit the loop on error
     }
+    await Future.delayed(Duration(milliseconds: 100)); // 100ミリ秒待機
   }
 
   // Process the remaining audio
@@ -192,30 +242,18 @@ Future<void> pickAndRecognizeFile(/*_recognizer*/) async {
       /*_recognizer!.acceptWaveformBytes(audioBytes);
       final recognitionResult = await _recognizer!.getFinalResult();*/
       int chunkSize = 8192;
-      //final recognitionResult = await processAudioBytes(audioBytes, _recognizer!, chunkSize);
+      final recognitionResult = await processAudioBytes(audioBytes, _recognizer!, chunkSize);
       /*final recognitionResult = await compute(processAudioChunk, {
         'bytes': audioBytes,
         'recognizer': _recognizer!,
         'chunkSize': chunkSize
       });*/
-      //final recognitionResult = await compute(_processAudioIsolate, audioBytes);
-      //final recognitionResult = await compute(processAudioBytes, audioBytes);
       /*IsolateData isolateData = IsolateData(
         audioBytes: audioBytes,
         recognizer: _recognizer,
         chunkSize: chunkSize,
       );
       final recognitionResult = await compute(processAudioIsolate, isolateData);*/
-      final recognitionResult = "";
-      /*Stream<String> dataStream = processAudioBytes(audioBytes, _recognizer!, chunkSize);
-      dataStream.listen(
-        (data) {
-          print("Received data: $data");
-        },
-        onDone: () {
-          print("End of data stream");
-        }
-      );*/
 
       // 結果をUIに表示
       print(recognitionResult);
@@ -235,9 +273,6 @@ Future<void> pickAndRecognizeFile(/*_recognizer*/) async {
     });*/
   }
 }
-void dataProcessingIsolate(SendPort sendPort) {
-  sendPort.send("aaa");
-}
 
 Future<void> recognizeFileAction() async {
   print("recognizeFileAction...");
@@ -250,19 +285,6 @@ Future<void> recognizeAction() async {
   print("recognizeAction");
   FFAppState().infoState = "認識中。。。";
   FFAppState().notifyListeners();
-
-  final receivePort = ReceivePort();
-  receivePort.listen((message) {
-    print('Processed data: $message');
-    receivePort.close();
-  });
-  await Isolate.spawn(dataProcessingIsolate, receivePort.sendPort);
-
-  // ストリーミングデータのシミュレーション
-  /*for (int i = 0; i < 10; i++) {
-    receivePort.send(i); // データを送信
-    await Future.delayed(Duration(seconds: 1)); // 1秒待機
-  }*/
 }
 
 Future<void> aboutAction() async {
