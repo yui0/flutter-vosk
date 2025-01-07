@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'home_provider.dart';
+import 'home_page_widget.dart';
 
 class AppBackground extends StatelessWidget {
  @override
@@ -40,38 +41,222 @@ class AppBackground extends StatelessWidget {
  }
 }
 
-class HomeTab extends StatelessWidget {
+class RoundedContainer extends StatelessWidget {
+  final Color containerColor;
+  final String text;
+  final double containerWidth;
+  final double containerHeight;
+
+  const RoundedContainer({
+    Key? key,
+    this.containerColor = Colors.lime,
+    required this.text,
+    this.containerWidth = 200,
+    this.containerHeight = 200,
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('Home Content', style: TextStyle(fontSize: 24)),
-          ElevatedButton(
-            onPressed: () {
-              // ボタンのアクション
-            },
-            child: Text('Go to Details'),
+    return Stack(
+      children: <Widget>[
+        Container(
+          width: containerWidth,
+          height: containerHeight,
+          decoration: BoxDecoration(
+            color: containerColor,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                offset: Offset(10, 10),
+                color: Theme.of(context).scaffoldBackgroundColor,
+                blurRadius: 20,
+              ),
+              BoxShadow(
+                offset: Offset(-10, -10),
+                color: Theme.of(context).scaffoldBackgroundColor,
+                blurRadius: 20,
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        Container(
+          alignment: Alignment.center,
+          height: 100,
+          width: 90,
+          child: Container(
+            alignment: Alignment.center,
+            height: 50,
+            width: 90,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(),
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(50),
+                bottomRight: Radius.circular(50),
+              ),
+            ),
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
 
-// Searchタブのクラス
-class SearchTab extends StatelessWidget {
+/*class HomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+    return Stack(
+      children: [
+        AppBackground(),
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Home Content', style: TextStyle(fontSize: 24)),
+              ElevatedButton(
+                onPressed: () {
+                  // ボタンのアクション
+                },
+                child: Text('Go to Details'),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}*/
+/*class HomeTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
         children: [
-          Text('Search Content', style: TextStyle(fontSize: 24)),
-          TextField(
-            decoration: InputDecoration(
-              hintText: 'Search...',
+        ],
+      ),
+    );
+  }
+}*/
+
+class LoginTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          AppBackground(),
+          SingleChildScrollView(
+            child: Container(
+              margin: const EdgeInsets.only(
+                left: 30, 
+                top: 100, 
+                right: 30, 
+                bottom: 50
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "ログイン",
+                        style: TextStyle(fontSize: 35, fontWeight: FontWeight.w900),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 40,
+                  ),
+                  const Text(
+                    "ログインID",
+                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  const TextField(
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  const Text(
+                    "パスワード",
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.w400),
+                  ),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  const TextField(
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        "パスワードをお忘れですか？",
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight:
+                            FontWeight.w400,
+                            color: Colors.blueAccent,
+                            decoration: TextDecoration.underline,
+                            decorationThickness: 2.0
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 40,
+                  ),
+                  Container(
+                    margin: const EdgeInsets.all(5),
+                    height: 50,
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.blueAccent
+                      ),
+                      child: const Text(
+                        'ログインする',
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
+                      ),
+                      onPressed: () {/*タップされた際の処理*/},
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.all(5),
+                    height: 50,
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          side: const BorderSide(color: Colors.blueAccent),
+                          foregroundColor: Colors.blueAccent,
+                          backgroundColor: Colors.white
+                      ),
+                      child: const Text(
+                        '新規登録',
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
+                      ),
+                      onPressed: () {/*タップされた際の処理*/},
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -80,24 +265,53 @@ class SearchTab extends StatelessWidget {
   }
 }
 
-// Settingsタブのクラス
+class SearchTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        AppBackground(),
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              RoundedContainer(text: 'Search Content'),
+              Text('Search Content', style: TextStyle(fontSize: 24)),
+              TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search...',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class SettingsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('Settings Content', style: TextStyle(fontSize: 24)),
-          SwitchListTile(
-            title: Text('Enable Notifications'),
-            value: true,
-            onChanged: (bool value) {
-              // スイッチのアクション
-            },
+    return Stack(
+      children: [
+        AppBackground(),
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Settings Content', style: TextStyle(fontSize: 24)),
+              SwitchListTile(
+                title: Text('Enable Notifications'),
+                value: true,
+                onChanged: (bool value) {
+                  // スイッチのアクション
+                },
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -115,25 +329,15 @@ class HomeScreen extends ConsumerWidget {
         body: NestedScrollView(
           headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
             return <Widget>[
-              /*SliverAppBar(
+              SliverAppBar(
+                title: Text('🌸ai memo🌸'),
+                pinned: true, // スクロールしてもAppBarを固定
+                floating: true, // スクロール開始と同時にAppBarを表示
+                expandedHeight: 150.0, // AppBarの最大高さ
                 onStretchTrigger: () async {
                   //await fetchCatImage();
                 },
                 stretch: true,
-                expandedHeight: 200,
-                flexibleSpace: FlexibleSpaceBar(
-                  title: const Text('SliverAppBar Sample'),
-                  background: Image.network(
-                    "https://aws.random.cat/meow",
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                ),*/
-              SliverAppBar(
-                title: Text('SliverAppBar + TabView'),
-                pinned: true, // スクロールしてもAppBarを固定
-                floating: true, // スクロール開始と同時にAppBarを表示
-                expandedHeight: 150.0, // AppBarの最大高さ
                 flexibleSpace: FlexibleSpaceBar(
                   background: Image.network(
                     "https://picsum.photos/200/150",
@@ -153,94 +357,13 @@ class HomeScreen extends ConsumerWidget {
           },
           body: TabBarView(
             children: [
-              HomeTab(),
+              HomePageWidget(),
               SearchTab(),
               SettingsTab(),
-              //Center(child: Text('Tab 2 Content')),
-              AppBackground(),
-              //Center(child: Text('Tab 3 Content')),
-Stack(
-    children: <Widget>[
-      Container(
-        width: 200,
-        height: 200,
-        decoration: BoxDecoration(
-          color: Colors.lime,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              offset: Offset(10, 10),
-              color: Theme.of(context).scaffoldBackgroundColor,
-              blurRadius: 20,
-            ),
-            BoxShadow(
-              offset: Offset(-10, -10),
-              color: Theme.of(context).scaffoldBackgroundColor,
-              blurRadius: 20,
-            ),
-          ],
-        ),
-      ),
-      Container(
-        alignment: Alignment.center,
-        height: 100,
-        width: 90,
-        child: Container(
-          alignment: Alignment.center,
-          height: 50,
-          width: 90,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border(),
-            borderRadius: BorderRadius.only(
-              topRight: Radius.circular(50),
-              bottomRight: Radius.circular(50),
-            ),
-          ),
-          child: Text(
-            'test',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-        ),
-      ),
-    ],
-  ),
             ],
           ),
         ),
       ),
     );
-
-    /*return Scaffold(
-      appBar: AppBar(title: Text('Counter Example')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Count: ${counterState.count}',
-              //style: Theme.of(context).textTheme.headline4,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.remove),
-                  onPressed: counterNotifier.decrement,
-                ),
-                IconButton(
-                  icon: Icon(Icons.add),
-                  onPressed: counterNotifier.increment,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );*/
   }
 }

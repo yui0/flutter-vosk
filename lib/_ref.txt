@@ -1,0 +1,29 @@
+flutter downgrade 3.24.0
+https://github.com/FlutterFlow/sample-apps/tree/main
+https://docs.flutterflow.io/generated-code/project-structure
+
+git tag -l '3.3*'
+git branch
+git checkout 3.24.5
+git checkout 3.27.1
+flutter --version
+
+rm -rf /root/.pub-cache/*
+
+dart pub upgrade
+flutter channel master
+flutter upgrade --force
+
+
+
+flutter_flow_button_tabbar.dart:
+    //final TabBarTheme tabBarTheme = TabBarTheme.of(context);
+    final TabBarThemeData tabBarTheme = TabBarTheme.of(context);
+
+import 'package:flutterflow_ui/flutterflow_ui.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+
+  launchURL(url) {}
+
+Container -> SingleChildScrollView
+
