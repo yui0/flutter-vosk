@@ -173,7 +173,10 @@ Future<String> processAudioBytes(
         str += map['text'];
         print(str);
       } else {
-        final s = await recognizer.getPartialResult();
+        String jsonString = await recognizer.getPartialResult();
+        Map<String, dynamic> map = jsonDecode(jsonString);
+        final s = map['text'];
+        //final s = await recognizer.getPartialResult();
         print(s);
         FFAppState().infoState = s;
         FFAppState().notifyListeners();
