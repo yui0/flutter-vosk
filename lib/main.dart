@@ -12,6 +12,7 @@ import 'index.dart';*/
 import 'package:flutterflow_ui/flutterflow_ui.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'app_state.dart';
+import 'actions.dart' as actions;
 
 import 'home_widget.dart' show HomeWidget;
 import 'settings_widget.dart' show SettingsWidget;
@@ -82,6 +83,8 @@ void main() async {
 
   final appState = FFAppState(); // Initialize FFAppState
   await appState.initializePersistedState();
+
+  actions.initializeLibrary();
 
   runApp(ChangeNotifierProvider(
     create: (context) => appState,
