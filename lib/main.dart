@@ -1,36 +1,90 @@
+import 'package:provider/provider.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'home_screen.dart';
 
-void main() {
-  runApp(ProviderScope(child: MyApp()));
-}
+//import 'package:flutter_localizations/flutter_localizations.dart';
+//import 'package:flutter_web_plugins/url_strategy.dart';
+/*import '/flutter_flow/flutter_flow_theme.dart';
+import 'flutter_flow/flutter_flow_util.dart';
+import 'flutter_flow/nav/nav.dart';
+import 'index.dart';*/
 
-class MyApp extends StatelessWidget {
-  final MaterialColor materialWhite = const MaterialColor(
-    0xFFFFFFFF,
-    const <int, Color>{
-      50: const Color(0xFFFFFFFF),
-      100: const Color(0xFFFFFFFF),
-      200: const Color(0xFFFFFFFF),
-      300: const Color(0xFFFFFFFF),
-      400: const Color(0xFFFFFFFF),
-      500: const Color(0xFFFFFFFF),
-      600: const Color(0xFFFFFFFF),
-      700: const Color(0xFFFFFFFF),
-      800: const Color(0xFFFFFFFF),
-      900: const Color(0xFFFFFFFF),
-    },
-  );
+import 'package:flutterflow_ui/flutterflow_ui.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import 'app_state.dart';
+
+import 'home_widget.dart' show HomeWidget;
+import 'settings_widget.dart' show SettingsWidget;
+
+class Frame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        primarySwatch: materialWhite,
+    return DefaultTabController(
+      length: 2,//3, // タブの数
+      child: Scaffold(
+        body: NestedScrollView(
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return <Widget>[
+              SliverAppBar(
+                title: Text('🌸ai memo🌸'),
+                pinned: true, // スクロールしてもAppBarを固定
+                floating: true, // スクロール開始と同時にAppBarを表示
+                expandedHeight: 100.0, // AppBarの最大高さ
+                onStretchTrigger: () async {
+                },
+                stretch: true,
+                /*flexibleSpace: FlexibleSpaceBar(
+                  background: Image.network(
+                    "https://picsum.photos/200/150",
+                    fit: BoxFit.cover,
+                  ),
+                ),*/
+                bottom: TabBar(
+                  tabs: [
+                    Tab(icon: Icon(Icons.home), text: 'Home'),
+                    //Tab(icon: Icon(Icons.search), text: "Search"),
+                    Tab(icon: Icon(Icons.settings), text: "Settings"),
+                  ],
+                ),
+              ),
+            ];
+          },
+          body: TabBarView(
+            children: [
+              HomeWidget(),
+              //HomePageWidget(),
+              SettingsWidget(),
+            ],
+          ),
+        ),
       ),
-      darkTheme: ThemeData.dark(),
-      home: HomeScreen(),
     );
   }
 }
 
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'FlutterFlow App',
+      //theme: FlutterFlowTheme.of(context),
+      home: Frame(),
+    );
+  }
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  /*GoRouter.optionURLReflectsImperativeAPIs = true;
+  usePathUrlStrategy();*/
+
+  await FlutterFlowTheme.initialize();
+
+  final appState = FFAppState(); // Initialize FFAppState
+  await appState.initializePersistedState();
+
+  runApp(ChangeNotifierProvider(
+    create: (context) => appState,
+    child: MyApp(),
+  ));
+}

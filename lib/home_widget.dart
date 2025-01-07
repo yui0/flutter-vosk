@@ -1,5 +1,7 @@
 import 'package:flutterflow_ui/flutterflow_ui.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
+import 'app_state.dart';
+import 'actions.dart' as actions;
 
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -7,27 +9,27 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import 'home_page_model.dart';
-export 'home_page_model.dart';
+import 'home_model.dart';
+export 'home_model.dart';
 
-class HomePageWidget extends StatefulWidget {
-  const HomePageWidget({super.key});
+void launchURL(url) {}
+
+class HomeWidget extends StatefulWidget {
+  const HomeWidget({super.key});
 
   @override
-  State<HomePageWidget> createState() => _HomePageWidgetState();
+  State<HomeWidget> createState() => _HomeWidgetState();
 }
 
-class _HomePageWidgetState extends State<HomePageWidget> {
-  late HomePageModel _model;
+class _HomeWidgetState extends State<HomeWidget> {
+  late HomeModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
-
-  launchURL(url) {}
 
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => HomePageModel());
+    _model = createModel(context, () => HomeModel());
   }
 
   @override
@@ -39,6 +41,8 @@ class _HomePageWidgetState extends State<HomePageWidget> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<FFAppState>();
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -156,8 +160,8 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                             ),
                           ),
                           FFButtonWidget(
-                            onPressed: () {
-                              print('Button pressed ...');
+                            onPressed: () async {
+                              await actions.recognizeFileAction();
                             },
                             text: 'ファイル',
                             options: FFButtonOptions(
@@ -180,8 +184,8 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                             ),
                           ),
                           FFButtonWidget(
-                            onPressed: () {
-                              print('Button pressed ...');
+                            onPressed: () async {
+                              await actions.recognizeAction();
                             },
                             text: '認識',
                             options: FFButtonOptions(
@@ -216,7 +220,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                               FlutterFlowTheme.of(context).secondaryBackground,
                         ),
                         child: Text(
-                          '認識中...',
+                          FFAppState().infoState,
                           style:
                               FlutterFlowTheme.of(context).bodyMedium.override(
                                     fontFamily: 'Inter',
@@ -245,8 +249,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                           ),
                         ),
                         child: MarkdownBody(
-                          data:
-                              '''# Header 1\n## Header 2\n### Header 3\n\n*This text will be italic*\n\n**This text will be bold**''',
+                          data: FFAppState().resultState,
                           selectable: true,
                           onTapLink: (_, url, __) => launchURL(url!),
                         ),
@@ -272,8 +275,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                           ),
                         ),
                         child: MarkdownBody(
-                          data:
-                              '''# Header 1\n## Header 2\n### Header 3\n\n*This text will be italic*\n\n**This text will be bold**''',
+                          data: FFAppState().summaryState,
                           selectable: true,
                           onTapLink: (_, url, __) => launchURL(url!),
                         ),
@@ -299,8 +301,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
                           ),
                         ),
                         child: MarkdownBody(
-                          data:
-                              '''# Header 1\n## Header 2\n### Header 3\n\n*This text will be italic*\n\n**This text will be bold**''',
+                          data: FFAppState().refState,
                           selectable: true,
                           onTapLink: (_, url, __) => launchURL(url!),
                         ),
