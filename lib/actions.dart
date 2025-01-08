@@ -205,7 +205,7 @@ Future<String> processAudioBytes(
         String jsonString = await recognizer.getResult();
         if (jsonString!=Null) {
           Map<String, dynamic> map = jsonDecode(jsonString);
-          str += map['text'];
+          str += map['text'] ?? '';
           print(str);
           FFAppState().resultState = str;
           FFAppState().notifyListeners();
@@ -214,7 +214,7 @@ Future<String> processAudioBytes(
         String jsonString = await recognizer.getPartialResult();
         if (jsonString!=Null) {
           Map<String, dynamic> map = jsonDecode(jsonString);
-          final s = map['text'];
+          final s = map['partial'] ?? '';
           //final s = await recognizer.getPartialResult();
           print("partial: "+s);
           FFAppState().infoState = s;
@@ -239,7 +239,9 @@ Future<String> processAudioBytes(
     }
   }
 
-  return str + await recognizer.getFinalResult();
+  Map<String, dynamic> map = jsonDecode(await recognizer.getFinalResult());
+  return str + map['text'] ?? '';
+  //return str + await recognizer.getFinalResult();
 }
 
 /*class IsolateData {
