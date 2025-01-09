@@ -143,40 +143,6 @@ Future<dynamic> customCompute(Function function, dynamic arg) async {
 }*/
 
 // voskを使って認識
-/*Future<String> processAudioBytes(
-    Uint8List audioBytes, dynamic recognizer, int chunkSize) async {
-  int pos = 0;
-
-  while (pos + chunkSize < audioBytes.length) {
-    final resultReady = await recognizer.acceptWaveformBytes(
-      Uint8List.fromList(audioBytes.sublist(pos, pos + chunkSize)),
-    );
-    pos += chunkSize;
-
-    if (resultReady) {
-      String jsonString = await recognizer.getResult();
-      Map<String, dynamic> map = jsonDecode(jsonString);
-      str += map['text'];
-      print(str);
-    } else {
-      String jsonString = await recognizer.getPartialResult();
-      Map<String, dynamic> map = jsonDecode(jsonString);
-      final s = map['text'];
-      //final s = await recognizer.getPartialResult();
-      print("partial: "+s);
-      FFAppState().infoState = s;
-      FFAppState().notifyListeners();
-      print(s);
-    }
-    await Future.delayed(Duration(milliseconds: 100)); // 100ミリ秒待機
-  }
-
-  // Process the remaining audio
-  await recognizer.acceptWaveformBytes(
-    Uint8List.fromList(audioBytes.sublist(pos)),
-  );
-  return (await recognizer.getFinalResult());
-}*/
 Future<String> processAudioBytes(
     Uint8List audioBytes, dynamic recognizer, int chunkSize) async {
 //Future<String> processAudioBytes(Uint8List audioBytes) async {
