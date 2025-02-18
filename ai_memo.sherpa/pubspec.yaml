@@ -1,0 +1,31 @@
+name: ai_memo
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.0-91.0.dev
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  whisper_library_flutter: ^0.0.5
+  ggml_library_flutter: ^0.0.6
+  general_lib: ^0.0.65
+  whisper_library_dart: ^0.0.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/ggml-base.bin
+    - assets/ggml-small-q5_1.bin
+    - assets/jfk.wav
