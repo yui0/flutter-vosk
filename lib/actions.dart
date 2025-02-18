@@ -265,7 +265,7 @@ Future<void> recognizeFile(String filePath) async {
     FFAppState().notifyListeners();
     
     // 一時ファイルを削除
-    File(filePath).deleteSync();
+    //File(filePath).deleteSync();
   } catch (e) {
     print("Error recognizing file: $e");
   }

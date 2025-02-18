@@ -102,8 +102,10 @@ class _HomeWidgetState extends State<HomeWidget> {
                         controller: _model.dropDownValueController2 ??=
                             FormFieldController<String>(null),
                         options: ['ja.wav', 'jfk.wav', 'Option 1'],
-                        onChanged: (val) =>
-                            safeSetState(() => _model.dropDownValue2 = val),
+                        onChanged: (val) {
+                            safeSetState(() => _model.dropDownValue2 = val);
+                            if (val != null) actions.recognizeFile('assets/'+val);
+                        },
                         width: MediaQuery.sizeOf(context).width,
                         height: 45,
                         textStyle:
