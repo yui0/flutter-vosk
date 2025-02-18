@@ -1,3 +1,4 @@
+// Copyright © 2025 Yuichiro Nakada
 import 'package:provider/provider.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';

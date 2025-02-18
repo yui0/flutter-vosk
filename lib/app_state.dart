@@ -1,3 +1,4 @@
+// Copyright © 2025 Yuichiro Nakada
 import 'package:flutter/material.dart';
 
 class FFAppState extends ChangeNotifier {

@@ -1,3 +1,4 @@
+// Copyright © 2025 Yuichiro Nakada
 import 'package:flutterflow_ui/flutterflow_ui.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'app_state.dart';

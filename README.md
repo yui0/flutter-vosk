@@ -97,3 +97,8 @@ Built with 💖 by [Yuichiro Nakada/Berry Japan LLC]. Powered by:
 This project is licensed under the MIT License. See the `LICENSE` file for details.
 
 Enjoy using **AiMemo**! 🌟
+
+## 📖 References
+
+- https://www.narakeet.com/app/text-to-audio/
+- https://zenn.dev/itsuki9180/articles/f0f5e409a9c808

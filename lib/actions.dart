@@ -235,7 +235,7 @@ Future<String> _processAudioIsolate(Uint8List bytes) async {
   int chunkSize = 8192;
   return await processAudioBytes(bytes, _recognizer!, chunkSize);
 }*/
-Future<void> pickAndRecognizeFile(/*_recognizer*/) async {
+Future<String?> pickFile() async {
   try {
     // ファイルを選択
     FilePickerResult? result = await FilePicker.platform.pickFiles();
@@ -243,17 +243,43 @@ Future<void> pickAndRecognizeFile(/*_recognizer*/) async {
       // PCM形式に変換
       String inputPath = result.files.single.path!;
       String outputPath = "${inputPath}_converted.wav";
-      outputPath = await convertToPCM(inputPath, outputPath);
-
-      // PCMデータを読み込む
-      final audioBytes = File(outputPath).readAsBytesSync();
+      return await convertToPCM(inputPath, outputPath);
+    }
+  } catch (e) {
+    print("Error picking file: $e");
+  }
+  return null;
+}
+Future<void> recognizeFile(String filePath) async {
+  try {
+    // PCMデータを読み込む
+    final audioBytes = File(filePath).readAsBytesSync();
+    final _recognizer = await initializeModel("vosk-model-small-ja-0.22");
+    
+    int chunkSize = 8192;
+    final recognitionResult = await processAudioBytes(audioBytes, _recognizer!, chunkSize);
+    
+    // 結果をUIに表示
+    print(recognitionResult);
+    FFAppState().resultState = recognitionResult;
+    FFAppState().notifyListeners();
+    
+    // 一時ファイルを削除
+    File(filePath).deleteSync();
+  } catch (e) {
+    print("Error recognizing file: $e");
+  }
+}
+Future<void> pickAndRecognizeFile(/*_recognizer*/) async {
+  try {
+    // ファイルを選択
+    String? outputPath = await pickFile();
+    if (outputPath != null) {
+      recognizeFile(outputPath);
 
       // 音声認識ライブラリに渡す
-      final _recognizer = await initializeModel("vosk-model-small-ja-0.22");
       /*_recognizer!.acceptWaveformBytes(audioBytes);
       final recognitionResult = await _recognizer!.getFinalResult();*/
-      int chunkSize = 8192;
-      final recognitionResult = await processAudioBytes(audioBytes, _recognizer!, chunkSize);
       /*final recognitionResult = await compute(processAudioChunk, {
         'bytes': audioBytes,
         'recognizer': _recognizer!,
@@ -265,23 +291,8 @@ Future<void> pickAndRecognizeFile(/*_recognizer*/) async {
         chunkSize: chunkSize,
       );
       final recognitionResult = await compute(processAudioIsolate, isolateData);*/
-
-      // 結果をUIに表示
-      print(recognitionResult);
-      FFAppState().resultState = recognitionResult;
-      FFAppState().notifyListeners();
-
-      // 一時ファイルを削除
-      File(outputPath).deleteSync();
-    } else {
-      /*setState(() {
-        _RecognitionResult = "No file selected.";
-      });*/
     }
   } catch (e) {
-    /*setState(() {
-      _error = "Error processing file: $e";
-    });*/
   }
 }
 

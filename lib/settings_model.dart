@@ -1,3 +1,4 @@
+// Copyright © 2025 Yuichiro Nakada
 import 'package:flutterflow_ui/flutterflow_ui.dart';
 import 'dart:ui';
 import 'settings_widget.dart' show SettingsWidget;

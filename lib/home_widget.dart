@@ -1,3 +1,4 @@
+// Copyright © 2025 Yuichiro Nakada
 import 'package:flutterflow_ui/flutterflow_ui.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'app_state.dart';
@@ -100,7 +101,7 @@ class _HomeWidgetState extends State<HomeWidget> {
                       child: FlutterFlowDropDown<String>(
                         controller: _model.dropDownValueController2 ??=
                             FormFieldController<String>(null),
-                        options: ['Option 1', 'Option 2', 'Option 3'],
+                        options: ['ja.wav', 'jfk.wav', 'Option 1'],
                         onChanged: (val) =>
                             safeSetState(() => _model.dropDownValue2 = val),
                         width: MediaQuery.sizeOf(context).width,
