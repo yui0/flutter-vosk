@@ -43,7 +43,8 @@ Future<Recognizer?> initializeModel(String? name) async {
     // Load the model from the network
     print(modelDescription.url);
     //final modelPath = await _modelLoader.loadFromNetwork(modelDescription.url);
-    final modelPath = await _modelLoader.loadFromAssets("assets/models/vosk-model-small-ja-0.22.zip");
+    //final modelPath = await _modelLoader.loadFromAssets("assets/models/vosk-model-small-ja-0.22.zip");
+    final modelPath = await _modelLoader.loadFromAssets("assets/models/"+name!+".zip");
 
     // Create the model object
     print(modelPath);
@@ -252,18 +253,27 @@ Future<String?> pickFile() async {
 }
 Future<void> recognizeFile(String filePath) async {
   try {
+    print(FFAppState().modelState);
+    String model = "vosk-model-small-ja-0.22";
+    switch (FFAppState().modelState) {
+    case '英語':
+      model = "vosk-model-small-en-us-0.15";
+      break;
+    }
+
     // PCMデータを読み込む
     final audioBytes = File(filePath).readAsBytesSync();
-    final _recognizer = await initializeModel("vosk-model-small-ja-0.22");
-    
+    //final _recognizer = await initializeModel("vosk-model-small-ja-0.22");
+    final _recognizer = await initializeModel(model);
+
     int chunkSize = 8192;
     final recognitionResult = await processAudioBytes(audioBytes, _recognizer!, chunkSize);
-    
+
     // 結果をUIに表示
     print(recognitionResult);
     FFAppState().resultState = recognitionResult;
     FFAppState().notifyListeners();
-    
+
     // 一時ファイルを削除
     //File(filePath).deleteSync();
   } catch (e) {

@@ -29,6 +29,12 @@ class FFAppState extends ChangeNotifier {
     _enableDarkMode = value;
   }
 
+  String _modelState = "";
+  String get modelState => _modelState;
+  set modelState(String value) {
+    _modelState = value;
+  }
+
   String _infoState = "";
   String get infoState => _infoState;
   set infoState(String value) {

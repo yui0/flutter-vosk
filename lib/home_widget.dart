@@ -68,8 +68,10 @@ class _HomeWidgetState extends State<HomeWidget> {
                         controller: _model.dropDownValueController1 ??=
                             FormFieldController<String>(null),
                         options: ['日本語', '英語', '韓国語'],
-                        onChanged: (val) =>
-                            safeSetState(() => _model.dropDownValue1 = val),
+                        onChanged: (val) {
+                            safeSetState(() => _model.dropDownValue1 = val);
+                            if (val != null) FFAppState().modelState = val;
+                        },
                         width: MediaQuery.sizeOf(context).width,
                         height: 45,
                         textStyle:
