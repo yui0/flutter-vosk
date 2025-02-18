@@ -24,7 +24,7 @@ Welcome to **AiMemo**! This Flutter app leverages the power of Vosk speech recog
    ```
 3. 🔹 Navigate to the project directory:
    ```bash
-   cd aimemo
+   cd flutter-vosk
    ```
 4. 🔹 Install dependencies:
    ```bash
@@ -57,9 +57,8 @@ Welcome to **AiMemo**! This Flutter app leverages the power of Vosk speech recog
 
 ## ⚙️ Requirements
 
-- Flutter 2.0+
-- Dart SDK 2.12+
-- Android/iOS device or emulator
+- Flutter
+- Linux or Android/iOS device or emulator
 - FFmpeg for file processing
 
 ---
