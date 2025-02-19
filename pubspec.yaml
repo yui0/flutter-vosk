@@ -14,7 +14,9 @@ dependencies:
   record:
   path_provider:
   file_picker:
+
   ffmpeg_helper:
+    path: thirdparty/ffmpeg_helper-1.0.1
 
   vosk_flutter:
     path: thirdparty/vosk-flutter
