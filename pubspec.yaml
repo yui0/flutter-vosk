@@ -14,6 +14,7 @@ dependencies:
   record:
   path_provider:
   file_picker:
+  provider:
 
   ffmpeg_helper:
     path: thirdparty/ffmpeg_helper-1.0.1
@@ -24,8 +25,8 @@ dependencies:
     path: thirdparty/fllama
   flutter_riverpod:
 
-  flutterflow_ui:
-    path: thirdparty/flutterflow_ui-0.3.1
+  #flutterflow_ui:
+    #path: thirdparty/flutterflow_ui-0.3.1
   flutter_markdown:
   google_fonts:
 
