@@ -18,7 +18,7 @@ class HomeWidget extends StatefulWidget {
 
 class _HomeWidgetState extends State<HomeWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  String? selectedLanguage;
+  String? selectedLanguage = '日本語';
   String? selectedAudio;
 
   @override
