@@ -1,6 +1,6 @@
 {
-    "name": "ai_memo",
-    "short_name": "ai_memo",
+    "name": "aimemo",
+    "short_name": "aimemo",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

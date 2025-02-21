@@ -1,4 +1,4 @@
-package com.example.ai_memo
+package com.example.aimemo
 
 import io.flutter.embedding.android.FlutterActivity
 
