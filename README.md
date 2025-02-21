@@ -101,3 +101,12 @@ Enjoy using **AiMemo**! 🌟
 
 - https://www.narakeet.com/app/text-to-audio/
 - https://zenn.dev/itsuki9180/articles/f0f5e409a9c808
+
+---
+
+## 📸 Screenshots
+
+### 🎤 Real-time Speech Recognition
+![Real-time Recognition](screenshot_001.png)
+![Real-time Recognition](screenshot_002.png)
+
