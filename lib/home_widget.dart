@@ -1,5 +1,6 @@
 // Copyright © 2025 Yuichiro Nakada
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -54,9 +55,10 @@ class _HomeWidgetState extends State<HomeWidget> {
                   items: ['ja.wav', 'jfk.wav', 'Option 1']
                       .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                       .toList(),
-                  onChanged: (val) {
+                  onChanged: (val) /*async*/ {
                     setState(() => selectedAudio = val);
                     if (val != null) actions.recognizeFile('assets/' + val);
+                    //if (val != null) actions.recognizeFile(await rootBundle.loadString('assets/' + val));
                   },
                   decoration: InputDecoration(
                     labelText: 'デモ音声',

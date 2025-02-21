@@ -1,6 +1,7 @@
 import 'app_state.dart';
 
 import 'package:flutter/foundation.dart'; // compute
+import 'package:flutter/services.dart' show rootBundle;
 import 'dart:isolate';
 import 'dart:io'; // File
 import 'dart:typed_data'; // for Uint8List
@@ -262,7 +263,13 @@ Future<void> recognizeFile(String filePath) async {
     }
 
     // PCMデータを読み込む
-    final audioBytes = File(filePath).readAsBytesSync();
+    Uint8List audioBytes;
+    try {
+      audioBytes = File(filePath).readAsBytesSync();
+    } catch (e) {
+      ByteData data = await rootBundle.load(filePath);
+      audioBytes = data.buffer.asUint8List();
+    }
     //final _recognizer = await initializeModel("vosk-model-small-ja-0.22");
     final _recognizer = await initializeModel(model);
 
